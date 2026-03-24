@@ -1,0 +1,30 @@
+{
+  "name": "axiom-mcp",
+  "version": "2.0.0",
+  "description": "AXIOM — agent reasoning ledger. MCP server with SQLite persistence, auto-tagging, drift alerts, webhooks, and HTTP/SSE transport.",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "axiom-mcp": "dist/index.js",
+    "axiom-mcp-http": "dist/server-http.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "start:http": "node dist/server-http.js",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.10.2",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "sql.js": "^1.12.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.0.0",
+    "@types/sql.js": "^1.4.9",
+    "typescript": "^5.7.0"
+  }
+}
