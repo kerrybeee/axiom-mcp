@@ -18,6 +18,10 @@ It now also acts as an early control layer:
 
 If you are building or operating MCP agents, AXIOM gives you a way to inspect what happened and increasingly, to shape what happens next.
 
+Docs:
+- [CHANGELOG](./CHANGELOG.md)
+- [CONTRIBUTING](./CONTRIBUTING.md)
+
 ## In One Line
 
 AXIOM is a black box recorder plus early control system for AI agents.
