@@ -1,5 +1,10 @@
 # AXIOM MCP
 
+![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)
+![Node](https://img.shields.io/badge/node-%3E%3D22-339933.svg)
+![Transport](https://img.shields.io/badge/MCP-stdio%20%7C%20http%2Fsse-0a7ea4.svg)
+![Status](https://img.shields.io/badge/status-experimental-f59e0b.svg)
+
 AXIOM is an MCP server for AI agent observability and control.
 
 It started as a flight recorder for agent runs: logging reasoning steps, replaying sessions, detecting drift, and exporting shareable reports.
@@ -12,6 +17,21 @@ It now also acts as an early control layer:
 - cross-session learning from past runs
 
 If you are building or operating MCP agents, AXIOM gives you a way to inspect what happened and increasingly, to shape what happens next.
+
+## In One Line
+
+AXIOM is a black box recorder plus early control system for AI agents.
+
+## What Makes It Different
+
+Most agent tooling stops at logs.
+
+AXIOM tries to close the loop:
+- record what happened
+- detect unhealthy trajectories
+- recommend the next move
+- gate bad actions before they waste more time or money
+- learn from past runs
 
 ## Why Use It
 
@@ -29,6 +49,24 @@ Practical uses:
 - generating postmortems and audit trails
 - detecting repetition and wasted tool calls
 - enforcing guardrails before a run gets more expensive
+
+## Quickstart
+
+```bash
+npm install
+npm run build
+npm run start:http
+```
+
+Open:
+- `http://localhost:3456/dashboard`
+- `http://localhost:3456/gallery`
+
+Or run the stdio server:
+
+```bash
+npm run start
+```
 
 ## Core Features
 
@@ -113,6 +151,14 @@ JSON APIs:
 - `/api/sessions/:id`
 - `/api/leaderboard`
 - `/api/gallery`
+
+## Example Use Cases
+
+- You are tuning an agent and want to compare two prompt or tool strategies.
+- You need to know why an agent kept looping instead of shipping an answer.
+- You want a postmortem or HTML report after a failed run.
+- You want a policy like "stop if drift is too high" or "don't keep calling the same tool."
+- You want to inspect and govern agent behavior across repeated runs, not just one transcript.
 
 ## Example Workflows
 
@@ -205,6 +251,17 @@ Windows: `%APPDATA%\\Claude\\claude_desktop_config.json`
 ```bash
 codex mcp add axiom -- node /absolute/path/to/axiom-mcp/dist/index.js
 ```
+
+## Current State
+
+AXIOM is experimental, but the core pieces are already usable:
+- session logging and replay
+- drift detection
+- search and comparison
+- browser dashboard and report pages
+- policy-based guardrails
+- next-step recommendation
+- preflight action gating
 
 ## Environment Variables
 
