@@ -1,25 +1,48 @@
-# AXIOM MCP Server v2.0
+# AXIOM MCP
 
-AXIOM is a flight recorder for AI agents: a persistent reasoning ledger with searchable receipts, drift detection, session replays, shareable exports, arena comparisons, postmortems, and HTTP/SSE transport for multi-agent setups.
+AXIOM is an MCP server for AI agent observability and control.
 
-AXIOM now also includes an early control layer: persistent policies, guard evaluations, next-step recommendations, branching options, and cross-session learning.
+It started as a flight recorder for agent runs: logging reasoning steps, replaying sessions, detecting drift, and exporting shareable reports.
 
-## What It Does
+It now also acts as an early control layer:
+- guardrails that evaluate a run in progress
+- persistent policies that can warn, re-plan, or stop a session
+- next-step recommendations
+- alternate branch suggestions
+- cross-session learning from past runs
 
-- Logs reasoning steps and tool calls into SQLite
-- Detects looping or repetitive behavior with a drift score
-- Replays sessions as timelines, narratives, and markdown casefiles
-- Exports sessions as JSON, Markdown, HTML, or compact share cards
-- Compares sessions head-to-head in an arena scorecard
-- Generates postmortems, fingerprints, and agent DNA summaries
-- Stores control policies that can warn, re-plan, switch tools, summarize, or stop runs
-- Recommends the best next move for a session instead of only replaying the past
-- Proposes alternate branches with predicted outcomes
-- Learns recurring healthy and risky patterns from historical runs
-- Gates proposed next actions and can persist watch/blocked session state
-- Lets a session be explicitly resumed after a re-plan or human review
-- Ranks recent sessions with a lightweight leaderboard
-- Supports stdio and HTTP/SSE MCP transports
+If you are building or operating MCP agents, AXIOM gives you a way to inspect what happened and increasingly, to shape what happens next.
+
+## Why Use It
+
+Most agent runs are hard to debug once they go wrong.
+
+AXIOM helps you answer:
+- What did the agent actually do?
+- When did it start looping?
+- Which prompts, tools, or paths work better?
+- Should this run continue, re-plan, or stop?
+
+Practical uses:
+- debugging unreliable agent runs
+- comparing prompts, workflows, or agent variants
+- generating postmortems and audit trails
+- detecting repetition and wasted tool calls
+- enforcing guardrails before a run gets more expensive
+
+## Core Features
+
+- Reasoning ledger stored in SQLite
+- Auto-tagged receipts and drift scoring
+- Session replay, comparison, and search
+- HTML/Markdown/JSON exports and share cards
+- Browser dashboard, gallery, and report pages
+- Guard evaluation and next-move recommendation
+- Branch suggestions with predicted outcomes
+- Persistent policy system for session control
+- Gate checks that can allow, warn, or block proposed moves
+- Resume flow for blocked sessions
+- Historical learning across recent sessions
 
 ## Tools
 
@@ -56,7 +79,108 @@ npm install
 npm run build
 ```
 
-## Claude Desktop (stdio)
+## Run
+
+Stdio MCP server:
+
+```bash
+npm run start
+```
+
+HTTP/SSE server with browser UI:
+
+```bash
+AXIOM_PORT=3456 npm run start:http
+```
+
+Then open:
+- `http://localhost:3456/dashboard`
+- `http://localhost:3456/gallery`
+
+## Browser Routes
+
+- `/dashboard` - live browser dashboard for current and recent sessions
+- `/gallery` - featured runs, chaotic failures, and recovery stories
+- `/reports/:id` - polished HTML casefile for a session
+- `/postmortem/:id?style=professional|roast` - HTML postmortem page
+- `/visualize/:id` - Mermaid-ready visualization page
+- `/arena?session_a=<id>&session_b=<id>` - head-to-head HTML arena
+- `/events` - browser SSE stream for live updates
+
+JSON APIs:
+- `/api/dashboard`
+- `/api/sessions`
+- `/api/sessions/:id`
+- `/api/leaderboard`
+- `/api/gallery`
+
+## Example Workflows
+
+Export a session as HTML:
+
+```json
+{
+  "session_id": "current",
+  "format": "html"
+}
+```
+
+Generate a roast-style postmortem:
+
+```json
+{
+  "session_id": "current",
+  "style": "roast",
+  "format": "markdown"
+}
+```
+
+Add a persistent guard policy:
+
+```json
+{
+  "op": "add",
+  "name": "Stop high drift early",
+  "scope": "global",
+  "condition": "drift",
+  "action": "stop",
+  "threshold": 0.35
+}
+```
+
+Ask AXIOM what to do next:
+
+```json
+{
+  "session_id": "current",
+  "format": "text"
+}
+```
+
+Gate a proposed tool call:
+
+```json
+{
+  "session_id": "current",
+  "tool": "search",
+  "intent": "search again",
+  "enforce": true,
+  "format": "text"
+}
+```
+
+Resume a blocked session:
+
+```json
+{
+  "session_id": "current",
+  "note": "Human reviewed and replanned"
+}
+```
+
+## MCP Configuration
+
+### Claude Desktop
 
 macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`  
 Windows: `%APPDATA%\\Claude\\claude_desktop_config.json`
@@ -76,141 +200,10 @@ Windows: `%APPDATA%\\Claude\\claude_desktop_config.json`
 }
 ```
 
-## HTTP/SSE
+### Codex
 
 ```bash
-AXIOM_PORT=3456 npm run start:http
-```
-
-Remote hosts can connect to:
-
-- SSE: `http://your-server:3456/sse`
-- Health: `http://your-server:3456/health`
-- Dashboard: `http://your-server:3456/dashboard`
-
-## Browser Routes
-
-The HTTP server now ships with demo-friendly pages and JSON APIs:
-
-- `/dashboard` - live browser dashboard for current and recent sessions
-- `/gallery` - browse featured runs, chaotic failures, and recovery stories
-- `/reports/:id` - polished HTML casefile for a session
-- `/postmortem/:id?style=professional|roast` - HTML postmortem page
-- `/visualize/:id` - Mermaid-ready visualization page
-- `/arena?session_a=<id>&session_b=<id>` - head-to-head HTML arena
-- `/events` - browser SSE stream for live dashboard updates
-- `/api/dashboard` - dashboard JSON payload
-- `/api/sessions` - recent session summaries
-- `/api/sessions/:id` - single session summary JSON
-- `/api/leaderboard` - ranked session summaries
-- `/api/gallery` - featured, chaotic, and recovery gallery buckets
-
-## Example Prompts
-
-Ask your agent to use AXIOM like this:
-
-```text
-You have access to AXIOM, a flight recorder for agent reasoning.
-- Call axiom_log before each tool call and after significant decisions.
-- Call axiom_drift when you suspect repetition or looping.
-- Call axiom_postmortem at the end of failed runs.
-- Call axiom_export with format="html" or format="card" for shareable output.
-- Call axiom_arena to compare prompt or agent variants on the same task.
-```
-
-## Example Workflows
-
-### Export a session as HTML
-
-```json
-{
-  "session_id": "current",
-  "format": "html"
-}
-```
-
-### Generate a roast-style postmortem
-
-```json
-{
-  "session_id": "current",
-  "style": "roast",
-  "format": "markdown"
-}
-```
-
-### Compare two sessions in the arena
-
-```json
-{
-  "session_a": "abc123",
-  "session_b": "def456",
-  "format": "html"
-}
-```
-
-### Visualize a session as Mermaid
-
-```json
-{
-  "session_id": "current",
-  "format": "mermaid"
-}
-```
-
-### Add a persistent guard policy
-
-```json
-{
-  "op": "add",
-  "name": "Stop high drift early",
-  "scope": "global",
-  "condition": "drift",
-  "action": "stop",
-  "threshold": 0.35
-}
-```
-
-### Ask AXIOM what to do next
-
-```json
-{
-  "session_id": "current",
-  "format": "text"
-}
-```
-
-### Gate a proposed tool call before using it
-
-```json
-{
-  "session_id": "current",
-  "tool": "search",
-  "intent": "search again",
-  "enforce": true,
-  "format": "text"
-}
-```
-
-### Resume a blocked session
-
-```json
-{
-  "session_id": "current",
-  "note": "Human reviewed and replanned"
-}
-```
-
-### Open the browser dashboard
-
-```text
-http://localhost:3456/dashboard
-```
-
-### Open the gallery
-
-```text
-http://localhost:3456/gallery
+codex mcp add axiom -- node /absolute/path/to/axiom-mcp/dist/index.js
 ```
 
 ## Environment Variables
@@ -221,8 +214,12 @@ http://localhost:3456/gallery
 | `AXIOM_WEBHOOK_THRESHOLD` | `0.5` | Drift score that triggers webhook delivery |
 | `AXIOM_PORT` | `3456` | Port for HTTP/SSE transport |
 
-## Current Positioning
+## Positioning
 
-The most useful mental model is:
+The shortest honest description is:
 
-> AXIOM is a black box recorder and postmortem engine for AI agents.
+> AXIOM is a black box recorder and emerging control layer for AI agents.
+
+## License
+
+MIT
